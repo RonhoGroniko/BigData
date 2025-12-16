@@ -1,5 +1,7 @@
 package lab1
 
+import kotlin.random.Random
+
 data class ResultCell(val i: Int, val k: Int)
 data class Val(val tag: Char, val j: Int, val value: Double) // ('A', j, value)
 
@@ -88,20 +90,32 @@ fun multiplyMapReduce(A: Array<DoubleArray>, B: Array<DoubleArray>): Array<Doubl
     return reducer(grouped, rowsA, colsB)
 }
 
+fun randomMatrix(rows: Int, cols: Int, seed: Int = 42): Array<DoubleArray> {
+    val rnd = Random(seed)
+    return Array(rows) { DoubleArray(cols) { rnd.nextDouble(-1.0, 1.0) } }
+}
+
+
 fun main() {
 
-    val A = arrayOf(
-        doubleArrayOf(5.0, 3.0, 2.0),
-        doubleArrayOf(1.0, 2.0, 8.0)
-    )
-    val B = arrayOf(
-        doubleArrayOf(1.0, 2.0),
-        doubleArrayOf(4.0, 5.0),
-        doubleArrayOf(7.0, 8.0)
-    )
+    val rowsA = 200
+    val colsA = 300
+    val colsB = 150
+
+    println("A = ${rowsA}x${colsA}, B = ${colsA}x${colsB}")
+
+    val A = randomMatrix(rowsA, colsA, seed = 1)
+
+    println("\nA\n")
+    for (row in A) println(row.joinToString(prefix = "[", postfix = "]") { "%.1f".format(it) })
+
+    val B = randomMatrix(colsA, colsB, seed = 2)
+
+    println("\nB\n")
+    for (row in B) println(row.joinToString(prefix = "[", postfix = "]") { "%.1f".format(it) })
 
     val C = multiplyMapReduce(A, B)
 
-    println("C = A × B")
+    println("\nC = A × B\n")
     for (row in C) println(row.joinToString(prefix = "[", postfix = "]") { "%.1f".format(it) })
 }

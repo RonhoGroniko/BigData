@@ -1,6 +1,7 @@
 package lab1
 
 import kotlin.math.abs
+import kotlin.random.Random
 
 fun transpose(M: Array<DoubleArray>): Array<DoubleArray> {
     val rows = M.size
@@ -141,28 +142,47 @@ fun linearRegressionNormalEq(
     return LinearRegressionResult(weights = w, intercept = intercept)
 }
 
+fun generateY(X: Array<DoubleArray>, seed: Int = 42): DoubleArray {
+    val rnd = Random(seed)
+    val n = X.size
+    val p = X[0].size
+
+    val w = DoubleArray(p + 1) { i ->
+        if (i == 0) 1.5 else rnd.nextDouble(-2.0, 2.0)
+    }
+
+    val y = DoubleArray(n)
+    for (i in 0 until n) {
+        var v = w[0]
+        for (j in 0 until p) v += w[j + 1] * X[i][j]
+        v += rnd.nextDouble(-0.05, 0.05)
+        y[i] = v
+    }
+    return y
+}
 
 fun demoLinearRegression() {
-    val Xraw = arrayOf(
-        doubleArrayOf(1.0, 2.0),
-        doubleArrayOf(2.0, 0.0),
-        doubleArrayOf(3.0, 1.0),
-        doubleArrayOf(4.0, 3.0),
-        doubleArrayOf(5.0, 2.0)
-    )
+    val n = 5000
+    val p = 20
 
-    val y = doubleArrayOf(6.1, 7.0, 9.4, 12.6, 13.1)
+    val X = randomMatrix(n, p)
 
-    val model = linearRegressionNormalEq(Xraw, y, intercept = true)
+    println("\nX\n")
+    for (row in X) println(row.joinToString(prefix = "[", postfix = "]") { "%.1f".format(it) })
+
+    val y = generateY(X, seed = 7)
+
+    val model = linearRegressionNormalEq(X, y, intercept = true)
     val w = model.weights
 
-    println("Линейная регрессия:")
-    println("w0 (intercept) = ${"%.4f".format(w[0])}")
-    println("w1 = ${"%.4f".format(w[1])}, w2 = ${"%.4f".format(w[2])}")
+    println("Количество весов = ${w.size} (w0 + $p)")
+    println("Веса: " + w.joinToString(prefix = "[", postfix = "]") { "%.6f".format(it) })
 
-    val xTest = doubleArrayOf(6.0, 1.0)
-    val yHat = w[0] + w[1] * xTest[0] + w[2] * xTest[1]
-    println("Прогноз для набора признаков: x1 = 6.0, x2 = 1.0: ŷ = ${"%.4f".format(yHat)}")
+
+    val x0 = X[0]
+    var yHat0 = w[0]
+    for (j in 0 until p) yHat0 += w[j + 1] * x0[j]
+    println("Предсказание для строки 0: ŷ = ${"%.6f".format(yHat0)} ; реальное значение y = ${"%.6f".format(y[0])}")
 }
 
 
